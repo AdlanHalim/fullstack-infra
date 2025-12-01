@@ -1,38 +1,156 @@
-.App {
-  text-align: center;
+/* frontend/src/App.css */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #f4f7f6;
+  color: #333;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
+.app-container {
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: #2d3748;
+}
+
+.btn-primary {
+  background: #3182ce;
+  color: white;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #3182ce;
+  padding: 0.5rem 1rem;
+  border: none;
+  cursor: pointer;
+}
+
+.main-content {
+  max-width: 1000px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  text-align: center;
+  width: 100%;
+}
+
+.upload-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  text-align: left;
+}
+
+.dropzone {
+  border: 2px dashed #cbd5e0;
+  padding: 2rem;
+  text-align: center;
+  border-radius: 4px;
+  position: relative;
+  cursor: pointer;
+}
+
+.dropzone input {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.job-box textarea {
+  width: 100%;
+  height: 150px;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 0.5rem;
+  font-family: inherit;
+}
+
+.analyze-btn {
+  margin-top: 2rem;
+  padding: 1rem 3rem;
+  font-size: 1.2rem;
+  background: #48bb78;
+  color: white;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.analyze-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Dashboard Styles */
+.dashboard {
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.score-circle {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 10px solid #3182ce;
+  display: flex;
+  flex-direction: column;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
 }
 
-.App-link {
-  color: #61dafb;
+.feedback-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  width: 100%;
+  margin-bottom: 2rem;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.feedback-card h4 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 0;
+}
+
+.bad {
+  border-left: 4px solid #e53e3e;
+}
+
+.good {
+  border-left: 4px solid #48bb78;
 }
