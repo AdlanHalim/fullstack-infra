@@ -5,22 +5,18 @@ function App() {
 
   const callBackend = async () => {
     try {
-      const response = await fetch("http://localhost:5000/ping");
-
-      // Check if backend returned success
-      if (!response.ok) {
-        throw new Error("Backend returned error status");
-      }
-
+      const backendUrl = process.env.REACT_APP_BACKEND_URL;
+      const response = await fetch(`${backendUrl}/ping`);
+      console.log("Raw response:", response);
       const data = await response.json();
-      console.log("Backend Response:", data);
-
-      setServerMessage(data.message || "No message returned");
+      console.log("Parsed JSON:", data);
+      setServerMessage(data.message);
     } catch (error) {
-      console.error("Error calling backend:", error);
+      console.error("Error:", error);
       setServerMessage("Failed to reach backend.");
     }
   };
+
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
