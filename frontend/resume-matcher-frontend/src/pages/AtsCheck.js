@@ -88,14 +88,14 @@ function AtsCheck() {
 
                     {/* TAB SWITCHER (Only for Logged In Users) */}
                     {user && (
-                        <div style={{ display: 'flex', background: '#E0E2EC', padding: '4px', borderRadius: '50px', marginBottom: '20px' }}>
+                        <div style={{ display: 'flex', background: 'var(--bg-subtle)', padding: '4px', borderRadius: '50px', marginBottom: '20px' }}>
                             <button
                                 onClick={() => setActiveTab('upload')}
                                 style={{
                                     flex: 1, padding: '10px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
                                     background: activeTab === 'upload' ? 'white' : 'transparent',
-                                    color: activeTab === 'upload' ? '#005AC1' : '#444',
-                                    boxShadow: activeTab === 'upload' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                                    color: activeTab === 'upload' ? 'var(--accent)' : 'var(--text-secondary)',
+                                    boxShadow: activeTab === 'upload' ? 'var(--shadow-sm)' : 'none',
                                     transition: 'all 0.2s'
                                 }}
                             >
@@ -106,8 +106,8 @@ function AtsCheck() {
                                 style={{
                                     flex: 1, padding: '10px', borderRadius: '50px', border: 'none', cursor: 'pointer', fontWeight: 'bold',
                                     background: activeTab === 'history' ? 'white' : 'transparent',
-                                    color: activeTab === 'history' ? '#005AC1' : '#444',
-                                    boxShadow: activeTab === 'history' ? '0 2px 4px rgba(0,0,0,0.1)' : 'none',
+                                    color: activeTab === 'history' ? 'var(--accent)' : 'var(--text-secondary)',
+                                    boxShadow: activeTab === 'history' ? 'var(--shadow-sm)' : 'none',
                                     transition: 'all 0.2s'
                                 }}
                             >
@@ -119,20 +119,20 @@ function AtsCheck() {
                     {/* MODE A: UPLOAD NEW */}
                     {activeTab === 'upload' && (
                         <div className="card">
-                            <h3 style={{ textAlign: 'center' }}>Upload Resume for ATS Scan</h3>
-                            <div className="dropzone" style={{ borderColor: '#0B572E', background: '#E6F4EA' }}>
-                                <Bot size={48} color="#0B572E" />
-                                <p>Drag & Drop or Click to Upload (PDF)</p>
+                            <h3 style={{ textAlign: 'center', color: 'var(--primary)' }}>Upload Resume for ATS Scan</h3>
+                            <div className="dropzone" style={{ borderColor: 'var(--success)', background: 'var(--success-bg)' }}>
+                                <Bot size={48} color="var(--success)" />
+                                <p style={{ color: 'var(--text-main)' }}>Drag & Drop or Click to Upload (PDF)</p>
                                 <input type="file" onChange={handleFileChange} accept=".pdf" />
-                                {file && <div style={{ marginTop: '10px', color: '#0B572E', fontWeight: 'bold' }}><FileText size={16} /> {file.name}</div>}
+                                {file && <div style={{ marginTop: '10px', color: 'var(--success)', fontWeight: 'bold' }}><FileText size={16} /> {file.name}</div>}
                             </div>
 
-                            <button className="analyze-btn" onClick={handleScanNew} disabled={loading} style={{ background: '#0B572E', marginTop: '20px' }}>
+                            <button className="analyze-btn" onClick={handleScanNew} disabled={loading} style={{ background: 'var(--success)', marginTop: '20px' }}>
                                 {loading ? "Robot is Reading..." : "Run ATS Simulation"}
                             </button>
 
                             {!user && (
-                                <p style={{ fontSize: '0.8rem', textAlign: 'center', color: '#666', marginTop: '15px' }}>
+                                <p style={{ fontSize: '0.8rem', textAlign: 'center', color: 'var(--text-secondary)', marginTop: '15px' }}>
                                     *Guest scan (Data will not be saved)
                                 </p>
                             )}
@@ -142,31 +142,31 @@ function AtsCheck() {
                     {/* MODE B: SELECT EXISTING */}
                     {activeTab === 'history' && user && (
                         <div className="card">
-                            <h3 style={{ textAlign: 'center', marginBottom: '20px' }}>Select from your Profile</h3>
+                            <h3 style={{ textAlign: 'center', marginBottom: '20px', color: 'var(--primary)' }}>Select from your Profile</h3>
                             {userResumes.length === 0 ? (
-                                <p style={{ textAlign: 'center', color: '#666' }}>No resumes found. Please upload one first.</p>
+                                <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>No resumes found. Please upload one first.</p>
                             ) : (
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                                     {userResumes.map(resume => (
                                         <div key={resume.id} style={{
                                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                            padding: '15px', border: '1px solid #E0E2EC', borderRadius: '12px',
+                                            padding: '15px', border: '1px solid #E2E8F0', borderRadius: '12px',
                                             background: 'white'
                                         }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                <div style={{ background: '#D8E2FF', padding: '8px', borderRadius: '8px' }}>
-                                                    <FileText size={20} color="#005AC1" />
+                                                <div style={{ background: 'var(--bg-subtle)', padding: '8px', borderRadius: '8px' }}>
+                                                    <FileText size={20} color="var(--primary)" />
                                                 </div>
                                                 <div>
-                                                    <div style={{ fontWeight: 'bold' }}>Resume #{resume.id}</div>
-                                                    <div style={{ fontSize: '0.8rem', color: '#666' }}>Uploaded: {resume.date}</div>
+                                                    <div style={{ fontWeight: 'bold', color: 'var(--primary)' }}>Resume #{resume.id}</div>
+                                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Uploaded: {resume.date}</div>
                                                 </div>
                                             </div>
                                             <button
                                                 onClick={() => handleScanExisting(resume.id)}
                                                 disabled={loading}
                                                 style={{
-                                                    background: '#0B572E', color: 'white', border: 'none',
+                                                    background: 'var(--success)', color: 'white', border: 'none',
                                                     padding: '8px 16px', borderRadius: '50px', cursor: 'pointer',
                                                     display: 'flex', alignItems: 'center', gap: '5px'
                                                 }}
@@ -180,25 +180,25 @@ function AtsCheck() {
                         </div>
                     )}
 
-                    {error && <div className="card" style={{ background: '#FCE8E6', color: '#C5221F', marginTop: '20px', textAlign: 'center' }}>{error}</div>}
+                    {error && <div className="card" style={{ background: 'var(--error-bg)', color: 'var(--error)', marginTop: '20px', textAlign: 'center' }}>{error}</div>}
                 </div>
             ) : (
                 // --- RESULTS DASHBOARD ---
                 <div className="dashboard">
                     {!result.is_saved && (
-                        <div style={{ background: '#221B00', color: '#FFEC9F', padding: '15px', borderRadius: '16px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                        <div style={{ background: 'var(--primary)', color: 'var(--text-inverse)', padding: '15px', borderRadius: '16px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
                             <div><strong>Guest Mode:</strong> Report not saved.</div>
-                            <Link to="/register" style={{ background: '#FFEC9F', color: '#221B00', padding: '6px 12px', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold' }}>Register</Link>
+                            <Link to="/register" style={{ background: 'white', color: 'var(--primary)', padding: '6px 12px', borderRadius: '50px', textDecoration: 'none', fontWeight: 'bold' }}>Register</Link>
                         </div>
                     )}
 
                     <div className="card" style={{ width: '100%', marginBottom: '20px', textAlign: 'center' }}>
-                        {result.filename && <div style={{ marginBottom: '10px', color: '#666' }}>Analysis for: <strong>{result.filename}</strong></div>}
-                        <div className="score-circle" style={{ borderColor: result.score > 80 ? '#10B981' : '#BA1A1A', margin: '0 auto 10px auto', width: '100px', height: '100px' }}>
+                        {result.filename && <div style={{ marginBottom: '10px', color: 'var(--text-secondary)' }}>Analysis for: <strong>{result.filename}</strong></div>}
+                        <div className="score-circle" style={{ borderColor: result.score > 80 ? 'var(--success)' : 'var(--error)', margin: '0 auto 10px auto', width: '100px', height: '100px' }}>
                             <span className="score-number" style={{ fontSize: '2rem' }}>{result.score}%</span>
                         </div>
-                        <h3>Parsability Score</h3>
-                        <p>How easily robots can read your file.</p>
+                        <h3 style={{ color: 'var(--primary)' }}>Parsability Score</h3>
+                        <p style={{ color: 'var(--text-secondary)' }}>How easily robots can read your file.</p>
                     </div>
 
                     <div className="feedback-grid">
@@ -210,17 +210,17 @@ function AtsCheck() {
                         </div>
 
                         <div className="card">
-                            <h4><CheckCircle size={20} color="#005AC1" /> Data Extracted</h4>
+                            <h4 style={{ color: 'var(--primary)' }}><CheckCircle size={20} color="var(--accent)" /> Data Extracted</h4>
                             <ul style={{ listStyle: 'none', padding: 0 }}>
-                                <li><strong>Email: </strong> {result.results.parsed_info.email ? <span style={{ color: 'green' }}>✅ {result.results.parsed_info.email}</span> : <span style={{ color: 'red' }}>❌ Not Found</span>}</li>
-                                <li><strong>Phone: </strong> {result.results.parsed_info.phone ? <span style={{ color: 'green' }}>✅ {result.results.parsed_info.phone}</span> : <span style={{ color: 'red' }}>❌ Not Found</span>}</li>
+                                <li><strong>Email: </strong> {result.results.parsed_info.email ? <span style={{ color: 'var(--success)' }}>✅ {result.results.parsed_info.email}</span> : <span style={{ color: 'var(--error)' }}>❌ Not Found</span>}</li>
+                                <li><strong>Phone: </strong> {result.results.parsed_info.phone ? <span style={{ color: 'var(--success)' }}>✅ {result.results.parsed_info.phone}</span> : <span style={{ color: 'var(--error)' }}>❌ Not Found</span>}</li>
                             </ul>
                         </div>
 
-                        <div className="card" style={{ background: result.results.issues.length > 0 ? '#FCE8E6' : '#E6F4EA' }}>
-                            <h4 style={{ color: result.results.issues.length > 0 ? '#BA1A1A' : '#0B572E' }}><AlertTriangle size={20} /> {result.results.issues.length} Issues</h4>
+                        <div className="card" style={{ background: result.results.issues.length > 0 ? 'var(--error-bg)' : 'var(--success-bg)' }}>
+                            <h4 style={{ color: result.results.issues.length > 0 ? 'var(--error)' : 'var(--success)' }}><AlertTriangle size={20} /> {result.results.issues.length} Issues</h4>
                             <ul style={{ paddingLeft: '20px' }}>
-                                {result.results.issues.map((issue, idx) => <li key={idx} style={{ color: '#BA1A1A', marginBottom: '5px' }}>{issue}</li>)}
+                                {result.results.issues.map((issue, idx) => <li key={idx} style={{ color: 'var(--error)', marginBottom: '5px' }}>{issue}</li>)}
                             </ul>
                         </div>
                     </div>
