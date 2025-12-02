@@ -1,3 +1,4 @@
+# backend/models.py
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import foreign
 import datetime
@@ -5,29 +6,27 @@ import datetime
 db = SQLAlchemy()
 
 # ----------------------
-# DATABASE 1: MAIN (Operational)
+# 🟢 DATABASE 1: MAIN (Operational)
 # ----------------------
+# This table knows NOTHING about the file content.
 class User(db.Model):
     __tablename__ = 'users'
-    # Normal Auth: All account info stays here
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(50), unique=True, nullable=False)
-    email = db.Column(db.String(100), unique=True, nullable=False) # Moved back here
+    email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
 class Resume(db.Model):
     __tablename__ = 'resumes'
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True) # Nullable because guests can upload
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    # Metadata (Safe to store in main DB)
-    job_description_snippet = db.Column(db.Text) # First few lines of job desc
+    # ✅ SAFE METADATA ONLY
     match_score = db.Column(db.Float)
-    missing_keywords = db.Column(db.Text) # JSON string of keywords
+    missing_keywords = db.Column(db.Text) # Stored as string "[Python, Java]"
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-    # Magic Link to PII DB
+    # The Magic Link to the Secret DB
     pii = db.relationship(
         'ResumePII', 
         backref='resume', 
@@ -37,17 +36,17 @@ class Resume(db.Model):
     )
 
 # ----------------------
-# DATABASE 2: PII (Sensitive)
+# 🔴 DATABASE 2: PII (Sensitive / Encrypted Storage)
 # ----------------------
+# All file details live HERE.
 class ResumePII(db.Model):
-    __bind_key__ = 'pii_db' 
+    __bind_key__ = 'pii_db'  # <--- Sent to the Secure Database
     __tablename__ = 'resume_pii'
 
     id = db.Column(db.Integer, primary_key=True)
     resume_id = db.Column(db.Integer, nullable=False, index=True)
     
-    # The Dangerous Data
-    original_filename = db.Column(db.String(255))
-    file_path = db.Column(db.String(512)) # Path to file on disk
-    extracted_text_dump = db.Column(db.Text) # Full text content of PDF
-    extracted_contact_info = db.Column(db.Text) # JSON of phone/email/address
+    # 🔒 SENSITIVE FILE DATA
+    original_filename = db.Column(db.String(255)) 
+    file_path = db.Column(db.String(512)) 
+    extracted_text_dump = db.Column(db.Text)
