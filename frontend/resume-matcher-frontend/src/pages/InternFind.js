@@ -14,7 +14,7 @@ function InternFind() {
     // 1. Fetch Resumes on Load
     useEffect(() => {
         if (user && token) {
-            fetch('http://127.0.0.1:5000/profile', {
+            fetch(`${process.env.REACT_APP_API_URL}/profile`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(res => res.json())
@@ -32,7 +32,7 @@ function InternFind() {
         setMatches(null);
 
         try {
-            const response = await fetch(`http://127.0.0.1:5000/internship-match/${resumeId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/internship-match/${resumeId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const data = await response.json();

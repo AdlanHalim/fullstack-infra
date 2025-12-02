@@ -20,7 +20,7 @@ function AtsCheck() {
     // 1. Fetch User History on Load (if logged in)
     useEffect(() => {
         if (user && token) {
-            fetch('http://127.0.0.1:5000/profile', {
+            fetch(`${process.env.REACT_APP_API_URL}/profile`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
                 .then(res => res.json())
@@ -49,7 +49,7 @@ function AtsCheck() {
         if (token) headers['Authorization'] = `Bearer ${token}`;
 
         try {
-            const response = await fetch('http://127.0.0.1:5000/ats-scan', {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/ats-scan`, {
                 method: 'POST',
                 headers: headers,
                 body: formData,
@@ -65,7 +65,7 @@ function AtsCheck() {
     const handleScanExisting = async (resumeId) => {
         setLoading(true); setError('');
         try {
-            const response = await fetch(`http://127.0.0.1:5000/ats-rescan/${resumeId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_URL}/ats-rescan/${resumeId}`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` }
             });
