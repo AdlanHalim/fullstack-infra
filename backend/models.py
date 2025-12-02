@@ -1,4 +1,3 @@
-# backend/models.py
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import foreign
 import datetime
@@ -6,9 +5,8 @@ import datetime
 db = SQLAlchemy()
 
 # ----------------------
-# 🟢 DATABASE 1: MAIN (Operational)
+# DATABASE 1: MAIN (Operational)
 # ----------------------
-# This table knows NOTHING about the file content.
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -21,12 +19,20 @@ class Resume(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
     
-    # ✅ SAFE METADATA ONLY
-    match_score = db.Column(db.Float)
-    missing_keywords = db.Column(db.Text) # Stored as string "[Python, Java]"
+    # 1. Structure Check (Health)
+    structure_score = db.Column(db.Float, nullable=True)
+    structure_feedback = db.Column(db.Text, nullable=True) # Stored as string "[Missing1, Missing2]"
+
+    # 2. ATS Robot Check
+    ats_score = db.Column(db.Float, nullable=True)
+    ats_feedback = db.Column(db.Text, nullable=True) # Stored as string "[Issue1, Issue2]"
+
+    # 3. Internship Matching (Privacy Safe)
+    skills_detected = db.Column(db.Text, nullable=True) # Stored as string "['Python', 'React']"
+
     created_at = db.Column(db.DateTime, default=datetime.datetime.utcnow)
 
-    # The Magic Link to the Secret DB
+    # Magic Link to the Secret DB
     pii = db.relationship(
         'ResumePII', 
         backref='resume', 
@@ -36,7 +42,7 @@ class Resume(db.Model):
     )
 
 # ----------------------
-# 🔴 DATABASE 2: PII (Sensitive / Encrypted Storage)
+# DATABASE 2: PII (Sensitive / Encrypted Storage)
 # ----------------------
 # All file details live HERE.
 class ResumePII(db.Model):

@@ -3,31 +3,26 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from werkzeug.utils import secure_filename # <--- Added this missing import
+from werkzeug.utils import secure_filename
 
 from config import Config
-# FIX: Import db and models so Python knows what they are
-from models import db, User, Resume, ResumePII 
-from utils import extract_text_from_pdf, analyze_resume_structure
+from models import db, User, Resume, ResumePII
+# Import all analysis functions
+from utils import extract_text_from_pdf, analyze_resume_structure, analyze_ats_compatibility, extract_skills, match_jobs
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
 # --- CONFIGURATION ---
-# Create a folder to save uploaded files if it doesn't exist
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# 1. Enable CORS (Allow React to talk to us)
 CORS(app)
-
-# 2. Initialize Tools
 db.init_app(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
 
-# Create tables if they don't exist
 with app.app_context():
     db.create_all()
 
@@ -36,20 +31,10 @@ with app.app_context():
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
-    
-    # Simple check
     if User.query.filter_by(email=data.get('email')).first():
         return jsonify({"error": "Email already exists"}), 400
-
     hashed_password = bcrypt.generate_password_hash(data.get('password')).decode('utf-8')
-
-    # All data goes to Main DB now
-    new_user = User(
-        username=data.get('username'), 
-        email=data.get('email'), 
-        password_hash=hashed_password
-    )
-    
+    new_user = User(username=data.get('username'), email=data.get('email'), password_hash=hashed_password)
     try:
         db.session.add(new_user)
         db.session.commit()
@@ -63,38 +48,45 @@ def login():
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
-
-    # 1. Find user in Main DB
     user = User.query.filter_by(username=username).first()
-
-    # 2. Check password hash
     if user and bcrypt.check_password_hash(user.password_hash, password):
-        # 3. Create a Token (VIP Pass)
         access_token = create_access_token(identity=user.id)
         return jsonify({"token": access_token, "username": user.username}), 200
-    
     return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route('/profile', methods=['GET'])
-@jwt_required() # <--- PROTECTED ROUTE
+@jwt_required()
 def get_user_profile():
     current_user_id = get_jwt_identity()
-    
-    # 1. Get User Info
     user = User.query.get(current_user_id)
     if not user:
         return jsonify({"error": "User not found"}), 404
-
-    # 2. Get Past Resumes (From Main DB)
+    
+    # Get all resumes, sorted by newest first
     resumes = Resume.query.filter_by(user_id=current_user_id).order_by(Resume.created_at.desc()).all()
     
     resume_list = []
     for r in resumes:
+        # Get filename safely from PII
+        filename = "Unknown File"
+        if r.pii:
+            filename = r.pii.original_filename
+
         resume_list.append({
             "id": r.id,
-            "score": r.match_score,
+            "filename": filename,
             "date": r.created_at.strftime("%Y-%m-%d"),
-            "missing": eval(r.missing_keywords) if r.missing_keywords else []
+            
+            # Health Check Data
+            "structure_score": r.structure_score,
+            "structure_feedback": eval(r.structure_feedback) if r.structure_feedback else [],
+
+            # ATS Data
+            "ats_score": r.ats_score,
+            "ats_feedback": eval(r.ats_feedback) if r.ats_feedback else [],
+            
+            # Skills Data (Privacy Safe)
+            "skills": eval(r.skills_detected) if r.skills_detected else []
         })
 
     return jsonify({
@@ -103,76 +95,202 @@ def get_user_profile():
         "resumes": resume_list
     })
 
+# --- RESUME HEALTH CHECK (Upload New) ---
 @app.route('/analyze', methods=['POST'])
-@jwt_required(optional=True) # <--- CRITICAL CHANGE: Allows guests
+@jwt_required(optional=True)
 def analyze_resume():
-    # 1. Check if file exists
     if 'resume' not in request.files:
         return jsonify({"error": "Missing resume file"}), 400
-    
     file = request.files['resume']
     if file.filename == '':
         return jsonify({"error": "No selected file"}), 400
-
-    # 2. Check who is calling (User or Guest?)
     current_user_id = get_jwt_identity()
     
-    # 3. Save file temporarily (Required for PDF extraction)
     filename = secure_filename(file.filename)
     file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     file.save(file_path)
 
     try:
-        # 4. AI PROCESSING
         resume_text = extract_text_from_pdf(file_path)
         score, feedback = analyze_resume_structure(resume_text)
-
-        # 5. DATABASE LOGIC (The Filter)
+        
+        # Extract Skills
+        skills = extract_skills(resume_text)
+        
+        saved_status = False
+        
         if current_user_id:
-            # --- AUTHENTICATED USER: SAVE DATA ---
-            print(f"User {current_user_id} detected. Saving to DB...")
-            
-            # A. Main DB
             new_resume = Resume(
-                user_id=current_user_id, # Link to user                
-                match_score=score,
-                missing_keywords=str(feedback['missing'])
+                user_id=current_user_id,
+                structure_score=score,
+                structure_feedback=str(feedback['missing']),
+                skills_detected=str(skills) # Save skills to Main DB
             )
             db.session.add(new_resume)
             db.session.flush()
 
-            # B. PII DB
             new_pii = ResumePII(
                 resume_id=new_resume.id,
                 original_filename=filename,
-                file_path=file_path, # We keep the file for registered users
+                file_path=file_path,
                 extracted_text_dump=resume_text
             )
             db.session.add(new_pii)
             db.session.commit()
             saved_status = True
-            
         else:
-            # --- GUEST USER: DO NOT SAVE ---
-            print("Guest detected. Skipping Database.")
-            
-            # Security Cleanup: Delete the uploaded file immediately
             if os.path.exists(file_path):
                 os.remove(file_path)
-            
-            saved_status = False
 
-        # 6. Return Result
         return jsonify({
             "score": score,
             "present": feedback["present"],
             "missing": feedback["missing"],
-            "is_saved": saved_status # Tell frontend if we saved it
+            "is_saved": saved_status
+        })
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
+# --- ATS SCANNER (Upload New) ---
+@app.route('/ats-scan', methods=['POST'])
+@jwt_required(optional=True)
+def ats_scan():
+    if 'resume' not in request.files:
+        return jsonify({"error": "Missing resume file"}), 400
+    file = request.files['resume']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    current_user_id = get_jwt_identity()
+    filename = secure_filename(file.filename)
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(file_path)
+    file_size = os.path.getsize(file_path)
+
+    try:
+        resume_text = extract_text_from_pdf(file_path)
+        score, results = analyze_ats_compatibility(resume_text, file_size)
+        
+        # Extract Skills
+        skills = extract_skills(resume_text)
+        
+        saved_status = False
+        if current_user_id:
+            new_resume = Resume(
+                user_id=current_user_id,
+                ats_score=score,
+                ats_feedback=str(results['issues']),
+                skills_detected=str(skills) # Save skills to Main DB
+            )
+            db.session.add(new_resume)
+            db.session.flush()
+
+            new_pii = ResumePII(
+                resume_id=new_resume.id,
+                original_filename=filename,
+                file_path=file_path,
+                extracted_text_dump=resume_text
+            )
+            db.session.add(new_pii)
+            db.session.commit()
+            saved_status = True
+        else:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+
+        return jsonify({
+            "score": score,
+            "results": results,
+            "is_saved": saved_status
         })
 
     except Exception as e:
         db.session.rollback()
         return jsonify({"error": str(e)}), 500
+
+# --- ATS RESCAN (Using History) ---
+@app.route('/ats-rescan/<int:resume_id>', methods=['POST'])
+@jwt_required()
+def ats_rescan(resume_id):
+    current_user_id = get_jwt_identity()
+
+    # 1. Verify Ownership
+    resume = Resume.query.filter_by(id=resume_id, user_id=current_user_id).first()
+    if not resume:
+        return jsonify({"error": "Resume not found or unauthorized"}), 404
+
+    # 2. Retrieve Private Data
+    resume_pii = resume.pii
+    if not resume_pii:
+        return jsonify({"error": "Original file not found in secure storage."}), 404
+
+    try:
+        file_path = resume_pii.file_path
+        
+        # Check if file exists
+        if not os.path.exists(file_path):
+             return jsonify({"error": "File missing from disk."}), 404
+
+        file_size = os.path.getsize(file_path)
+        
+        # Prefer re-extracting to ensure fresh analysis
+        resume_text = extract_text_from_pdf(file_path)
+
+        # 4. Run ATS Logic
+        score, results = analyze_ats_compatibility(resume_text, file_size)
+
+        # 5. UPDATE the existing Resume row
+        resume.ats_score = score
+        resume.ats_feedback = str(results['issues'])
+        
+        # SELF-HEALING: If skills missing, extract and save
+        if not resume.skills_detected:
+            skills = extract_skills(resume_text)
+            resume.skills_detected = str(skills)
+            
+        db.session.commit()
+
+        return jsonify({
+            "score": score,
+            "results": results,
+            "is_saved": True, 
+            "filename": resume_pii.original_filename
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# --- INTERNSHIP MATCHING ---
+@app.route('/internship-match/<int:resume_id>', methods=['GET'])
+@jwt_required()
+def internship_match(resume_id):
+    current_user_id = get_jwt_identity()
+    
+    # 1. Get Resume from Main DB
+    resume = Resume.query.filter_by(id=resume_id, user_id=current_user_id).first()
+    if not resume:
+        return jsonify({"error": "Resume not found"}), 404
+        
+    # 2. Get Skills (Privacy Safe - No File Access Needed if already extracted)
+    skills = []
+    if resume.skills_detected:
+        skills = eval(resume.skills_detected)
+    else:
+        # Fallback: If old resume, fetch from PII and update
+        if resume.pii and os.path.exists(resume.pii.file_path):
+            text = extract_text_from_pdf(resume.pii.file_path)
+            skills = extract_skills(text)
+            resume.skills_detected = str(skills)
+            db.session.commit()
+            
+    # 3. Find Matches
+    matches = match_jobs(skills)
+    
+    return jsonify({
+        "skills_detected": skills,
+        "matches": matches
+    })
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

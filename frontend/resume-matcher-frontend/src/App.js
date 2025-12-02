@@ -7,6 +7,9 @@ import Profile from './pages/Profile';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import './App.css';
 import Register from './pages/Register';
+import AtsCheck from './pages/AtsCheck';
+
+import InternFind from './pages/InternFind';
 
 // --- REAL LOGIN COMPONENT ---
 const Login = () => {
@@ -96,8 +99,8 @@ function App() {
               } />
 
               <Route path="/register" element={<Register />} />
-              <Route path="/ats" element={<h2>ATS Checker Coming Soon</h2>} />
-              <Route path="/intern" element={<h2>Intern Finder Coming Soon</h2>} />
+              <Route path="/ats" element={<AtsCheck />} />
+              <Route path="/intern" element={<InternFind />} />
             </Routes>
           </div>
         </div>

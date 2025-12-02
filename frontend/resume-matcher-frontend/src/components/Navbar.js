@@ -47,6 +47,10 @@ function Navbar() {
                 ) : (
                     // GUEST VIEW (Invite to Save)
                     <div style={{ display: 'flex', gap: '10px' }}>
+                        <div style={{ display: 'flex', gap: '20px', marginLeft: '40px', marginRight: 'auto' }}>
+                            <Link to="/ats" style={{ textDecoration: 'none', color: '#444746', fontWeight: '500' }}>ATS Check</Link>
+                            <Link to="/intern" style={{ textDecoration: 'none', color: '#444746', fontWeight: '500' }}>Internships</Link>
+                        </div>
                         <Link to="/login" style={{ textDecoration: 'none', color: '#005AC1', fontWeight: 'bold', padding: '10px' }}>
                             Log In
                         </Link>
