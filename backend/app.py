@@ -13,10 +13,15 @@ from utils import extract_text_from_pdf, analyze_resume_structure, analyze_ats_c
 app = Flask(__name__)
 app.config.from_object(Config)
 
+
 # --- CONFIGURATION ---
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Ensure instance folder exists for SQLite
+instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
+os.makedirs(instance_path, exist_ok=True)
 
 CORS(app)
 db.init_app(app)

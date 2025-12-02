@@ -91,3 +91,18 @@ I have already added the necessary files to your backend:
 
 ### Troubleshooting
 *   **CORS Error**: If the frontend can't talk to the backend, ensure your Flask app allows the Vercel domain. Currently, `CORS(app)` in `app.py` allows all domains, so it should work fine.
+
+---
+
+## Alternative: Deploy Frontend (Netlify)
+
+If you prefer **Netlify**, use these settings:
+
+1.  **Import Project**: Connect GitHub and select your repo.
+2.  **Build Settings**:
+    *   **Base directory**: `frontend/resume-matcher-frontend`
+    *   **Build command**: `CI=false npm run build`
+    *   **Publish directory**: `build`
+3.  **Environment Variables**:
+    *   Go to **Site configuration** > **Environment variables**.
+    *   Add `REACT_APP_BACKEND_URL` with your Render URL.
