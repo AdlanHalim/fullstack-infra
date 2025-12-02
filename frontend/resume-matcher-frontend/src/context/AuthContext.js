@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext(null);
@@ -18,13 +18,13 @@ export const AuthProvider = ({ children }) => {
     };
 
     // 2. LOGOUT FUNCTION
-    const logout = () => {
+    const logout = useCallback(() => {
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         navigate('/login');
-    };
+    }, [navigate]);
 
     // 3. AUTO-LOGOUT (Inactivity Timer) - 10 Minutes
     useEffect(() => {
@@ -55,7 +55,7 @@ export const AuthProvider = ({ children }) => {
             window.removeEventListener('keypress', resetTimer);
             window.removeEventListener('click', resetTimer);
         };
-    }, [token]); // Re-run if login state changes
+    }, [token, logout]); // Re-run if login state changes
 
     // 4. RESTORE SESSION ON REFRESH
     useEffect(() => {

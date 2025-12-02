@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { FileText, LogOut, Calendar, AlertCircle } from 'lucide-react';
+import { LogOut, Calendar } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 

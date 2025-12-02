@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Upload, FileText, Bot, AlertTriangle, CheckCircle, Eye, History, ArrowRight } from 'lucide-react';
+import { FileText, Bot, AlertTriangle, CheckCircle, Eye, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import '../App.css';

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Briefcase, User, LogOut, ArrowRight, Menu, X } from 'lucide-react';
+import { Briefcase, User, LogOut, ArrowRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 function Navbar() {
@@ -86,7 +86,7 @@ function Navbar() {
                 ) : (
                     // GUEST VIEW
                     <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                        <div style={{ display: 'flex', gap: '24px', display: 'none', md: 'flex' }}>
+                        <div style={{ gap: '24px', display: 'none', md: 'flex' }}>
                             <Link to="/ats" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '500', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'var(--primary)'} onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}>ATS Check</Link>
                             <Link to="/intern" style={{ textDecoration: 'none', color: 'var(--text-secondary)', fontWeight: '500', transition: 'color 0.2s' }} onMouseEnter={(e) => e.target.style.color = 'var(--primary)'} onMouseLeave={(e) => e.target.style.color = 'var(--text-secondary)'}>Internships</Link>
                         </div>
